@@ -1,3 +1,6 @@
+import type { Timestamp } from "firebase/firestore";
+
+
 export interface Post {
   id: string; // Unique numeric identifier for the post
   title: string; // Title of the post
@@ -6,6 +9,6 @@ export interface Post {
   description: string; // Description or content of the post
   upvotes: number; // Number of upvotes
   downvotes: number; // Number of downvotes
-  createdAt: Date; // Date when the post was created
-  updatedAt: Date; // Date when the post was last updated
+  createdAt: Timestamp; // Date when the post was created
+  updatedAt: Timestamp; // Date when the post was last updated
 }

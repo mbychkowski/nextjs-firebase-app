@@ -1,11 +1,13 @@
-import { initialPosts } from "@/data";
 import { Post } from "@/features/posts/types";
+import { firestoreClient } from "@/lib/firestore";
+
+const COLLECTION = "posts"
+
+import { collection, getDocs } from "firebase/firestore";
 
 export async function getPosts(): Promise<Post[]> {
 
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  const querySnapshot = await getDocs(collection(firestoreClient, COLLECTION))
 
-  return new Promise(resolve => {
-    resolve(initialPosts)
-  });
+  return querySnapshot.docs.map(doc => doc.data() as Post)
 }

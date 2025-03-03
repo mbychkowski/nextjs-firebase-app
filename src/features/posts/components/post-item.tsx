@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { LucideArrowBigDown, LucideArrowBigUp, LucideSquareArrowOutUpRight } from "lucide-react";
+import { LucideArrowBigDown, LucideArrowBigUp, LucideSquareArrowOutUpRight, LucideTrash } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card"
 import { postPath } from "@/path";
 
+import { deletePost } from "../actions/delete-tickets";
 import { Post } from "../types";
 
 type PostItemProps = {
@@ -20,7 +21,7 @@ type PostItemProps = {
   isDetail?: boolean;
 }
 
-export default function PostItem({ post, isDetail }: PostItemProps) {
+export default function PostItem({ post, isDetail = false}: PostItemProps) {
 
   const upvoteButton = (
     <>
@@ -40,11 +41,19 @@ export default function PostItem({ post, isDetail }: PostItemProps) {
   )
 
   const detailButton = (
-    <Button variant="ghost" size="icon" asChild>
+    <Button variant="ghost" size="icon">
       <Link href={postPath(post.id)}>
         <LucideSquareArrowOutUpRight className="h-4 w-4" />
       </Link>
     </Button>
+  )
+
+  const deleteButton = (
+    <form action={deletePost.bind(null, post.id)}>
+      <Button variant="ghost" size="icon">
+        <LucideTrash className="h-4 w-4" />
+      </Button>
+    </form>
   )
 
   return (
@@ -59,13 +68,10 @@ export default function PostItem({ post, isDetail }: PostItemProps) {
         </div>
       }
       <Card className="w-full relative">
-        {
-          !isDetail &&
-          <div className="absolute top-0 right-0">
-            {detailButton}
-          </div>
 
-        }
+        <div className="absolute top-0 right-0">
+          {isDetail ? deleteButton : detailButton}
+        </div>
         <div className="flex items-center">
           <CardContent className="p-6">
             <div className="flex gap-x-2">
@@ -78,7 +84,7 @@ export default function PostItem({ post, isDetail }: PostItemProps) {
           </CardHeader>
         </div>
         <CardFooter className="flex flex-row items-center text-xs font-light text-muted-foreground">
-          {post.createdAt.toLocaleTimeString()}
+          {post.createdAt.toDate().toLocaleTimeString()}
         </CardFooter>
       </Card>
     </div>

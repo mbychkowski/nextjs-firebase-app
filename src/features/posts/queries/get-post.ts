@@ -1,12 +1,14 @@
-import { initialPosts } from "@/data";
+import { collection, getDocs } from "firebase/firestore";
+
 import { Post } from "@/features/posts/types";
+import { firestoreClient } from "@/lib/firestore";
+
+const COLLECTION = "posts"
 
 export async function getPost(postId: string): Promise<Post | null> {
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  const querySnapshot = await getDocs(collection(firestoreClient, COLLECTION));
 
-  const maybePost = initialPosts.find(post => post.id === postId);
+  const maybePost = querySnapshot.docs.find(doc => doc.data().id === postId)?.data() as Post;
 
-  return new Promise(resolve => {
-    resolve(maybePost || null)
-  });
+  return maybePost || null
 }
