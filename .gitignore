@@ -41,4 +41,11 @@ yarn-error.log*
 next-env.d.ts
 
 # Firebase
+.idea
+**/node_modules/*
+**/.firebaserc
+
 firebase.config.json
+
+.runtimeconfig.json
+.firebase/
