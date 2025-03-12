@@ -1,0 +1,18 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: frontend
+profiles:
+- name: dev
+  build:
+    googleCloudBuild: {}
+    tagPolicy:
+      gitCommit: {}
+    artifacts:
+    - image: frontend
+      context: .
+  manifests:
+    rawYaml:
+      - ./manifests/run.yaml
+  deploy:
+    cloudrun: {}

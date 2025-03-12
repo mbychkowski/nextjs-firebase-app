@@ -1,6 +1,9 @@
 source .env
 
 GCP_SA_GITHUB_ACTIONS_EXISTS=$(gcloud iam service-accounts list --project "${GCP_PROJECT_ID}" | grep "${GCP_SA_GITHUB_ACTIONS}")
+GCP_SA_BUILD_EXISTS=$(gcloud iam service-accounts list --project "${GCP_PROJECT_ID}" | grep "${GCP_SA_BUILD}")
+GCP_SA_DEPLOY_AUTO_EXISTS=$(gcloud iam service-accounts list --project "${GCP_PROJECT_ID}" | grep "${GCP_SA_DEPLOY_AUTO}")
+GCP_SA_DEPLOY_EXEC_EXISTS=$(gcloud iam service-accounts list --project "${GCP_PROJECT_ID}" | grep "${GCP_SA_DEPLOY_EXEC}")
 
 # 1. Create a Google Cloud Service Account(s).
 
@@ -9,6 +12,30 @@ if [[ "${GCP_SA_GITHUB_ACTIONS_EXISTS}" ]]; then
     echo "Service Account ${GCP_SA_GITHUB_ACTIONS} already exists."
 else
     gcloud iam service-accounts create "${GCP_SA_GITHUB_ACTIONS}" \
+      --project "${GCP_PROJECT_ID}"
+fi
+
+# 1.b\ sa-build
+if [[ "${GCP_SA_BUILD_EXISTS}" ]]; then
+    echo "Service Account ${GCP_SA_BUILD} already exists."
+else
+    gcloud iam service-accounts create "${GCP_SA_BUILD}" \
+      --project "${GCP_PROJECT_ID}"
+fi
+
+# 1.c\ sa-deploy-auto
+if [[ "${GCP_SA_DEPLOY_AUTO_EXISTS}" ]]; then
+    echo "Service Account ${GCP_SA_DEPLOY_AUTO} already exists."
+else
+    gcloud iam service-accounts create "${GCP_SA_DEPLOY_AUTO}" \
+      --project "${GCP_PROJECT_ID}"
+fi
+
+# 1.d\ sa-deploy-exec
+if [[ "${GCP_SA_DEPLOY_EXEC_EXISTS}" ]]; then
+    echo "Service Account ${GCP_SA_DEPLOY_EXEC} already exists."
+else
+    gcloud iam service-accounts create "${GCP_SA_DEPLOY_EXEC}" \
       --project "${GCP_PROJECT_ID}"
 fi
 

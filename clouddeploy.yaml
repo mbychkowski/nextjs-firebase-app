@@ -1,0 +1,31 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: sportsball
+  annotations:
+    about: NextJS client
+  labels:
+    lang: typescript
+description: |
+  Delivery pipeline for CI CD sportsball.
+serialPipeline:
+  stages:
+  - targetId: sportsball-run-dev
+    profiles: [dev]
+    strategy:
+     standard:
+       verify: false
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: sportsball-run-dev
+description: 01 Development Cloud Run target
+requireApproval: false
+run:
+  location: projects/${GCP_PROJECT_ID_TARGET_DEV}/locations/us-central1
+executionConfigs:
+- usages:
+  - "RENDER"
+  - "DEPLOY"
+  serviceAccount: sa-deploy-exec@${GCP_PROJECT_ID}.iam.gserviceaccount.com

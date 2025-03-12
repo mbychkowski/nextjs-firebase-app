@@ -1,0 +1,42 @@
+name: CloudBuild continuous delivery
+
+on:
+  workflow_dispatch
+
+jobs:
+  cloudbuild:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_WI_PROVIDER_ID: ${{ vars.GCP_WI_PROVIDER_ID }}
+      GCP_LOCATION: ${{ vars.GCP_LOCATION }}
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      - name: 'Authenticate to Google Cloud Project'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          service_account: sa-github@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ env.GCP_WI_PROVIDER_ID }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+
+      - name: 'Get short SHA'
+        id: slug
+        run: echo "::set-output name=sha7::$(echo ${GITHUB_SHA} | cut -c1-7)"
+
+      - name: 'Submit CloudBuild with gcloud'
+        run: |
+          gcloud builds submit \
+            --config ./cloudbuild.yaml \
+            --region ${{ env.GCP_LOCATION }} \
+            --substitutions _RELEASE_ID=${{ steps.slug.outputs.sha7 }}

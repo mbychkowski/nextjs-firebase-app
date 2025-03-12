@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
@@ -16,21 +14,73 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy on Google Cloud
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Setup Artifact Regisrsy repository for app
+- Perform first revision on Cloud Run deployment
+- SA needs permissions on deployment target in respective Project
+  - Cloud Run Developer
+  - Kubernetes Engine Developer
+  - Service Account User
+  - Storage Object Admin
 
-## Learn More
+# 1\ Domain and IP Address with Cloud Endpoints
+https://cloud.google.com/architecture/exposing-service-mesh-apps-through-gke-ingress/deployment#configure_ip_addressing_and_dns
 
-To learn more about Next.js, take a look at the following resources:
+```
+export GCLB_IP=$(gcloud compute addresses describe sportsball \
+  --global \
+  --format "value(address)")
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+echo ${GCLB_IP}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+cat <<EOF > ./.env-dns-spec.yaml
+swagger: "2.0"
+info:
+  description: "Sportsball"
+  title: "Sportsball Cloud Endpoints DNS"
+  version: "1.0.0"
+paths: {}
+host: "sportsball.endpoints.${PROJECT_ID}.cloud.goog"
+x-google-endpoints:
+- name: "sportsball.endpoints.${PROJECT_ID}.cloud.goog"
+  target: "${GCLB_IP}"
+EOF
+```
 
-## Deploy on Vercel
+```
+gcloud endpoints services deploy ./.env-dns-spec.yaml
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 2\ Provision Global External Application Load Balancer
+https://cloud.google.com/load-balancing/docs/https/setting-up-https-serverless
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+as part of this you will need to create an SSL certificate resource with
+Google-managed SSL certificate: https://cloud.google.com/load-balancing/docs/https/setting-up-https-serverless#ssl_certificate_resource
+
+For cross-project configuration, where the backend service is in another
+project, setup serverless negs in the service project to connect to from
+the host project
+
+# 3\ VPC Access Connectot for future private outbound configuration
+https://cloud.google.com/run/docs/configuring/vpc-connectors
+
+
+# 4\ Configure IAP
+https://codelabs.developers.google.com/secure-serverless-application-with-identity-aware-proxy#5
+
+Where does redirect uri come from? Part of it is Client Id.
+```
+https://iap.googleapis.com/v1/oauth/clientIds/<oauth2-client-id>:handleRedirect
+```
+
+Add members to policy.
+```
+gcloud iap web add-iam-policy-binding \
+    --resource-type=backend-services \
+    --service=sportsball-run-dev-be \
+    --member=user:$USER_EMAIL \
+    --role='roles/iap.httpsResourceAccessor'
+```

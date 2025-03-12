@@ -1,20 +1,20 @@
-name: Handle secrets
+name: CloudDeploy initialize
 
 on:
   workflow_dispatch
 
 jobs:
-  secretmanager:
-    name: Handle secrets with Secret Manager
+  cloudbuild:
+    name: Build Container Image
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
     env:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_PROJECT_ID_TARGET_DEV: ${{ vars.GCP_PROJECT_ID_TARGET_DEV }}
       GCP_WI_PROVIDER_ID: ${{ vars.GCP_WI_PROVIDER_ID }}
-      GCP_LOCATION: ${{ vars.GCP_LOCATION }}
-      FIREBASE_CONFIG_JSON: ${{ vars.FIREBASE_CONFIG_JSON }}
+      GCP_LOCATION: ${{ vars.GCP_LOCATION || 'us-central1' }}
 
     steps:
       - name: 'Checkout code'
@@ -31,8 +31,12 @@ jobs:
         with:
           version: '>= 363.0.0'
 
-      - name: 'Submit firebase config json to Secret Manager with gcloud'
+      - name: 'Replace variables'
         run: |
-          echo -n ${{ env.FIREBASE_CONFIG_JSON }} | \
-          gcloud secrets versions add firebase-config \
-            --data-file=-
+          sed -i "s:\${GCP_PROJECT_ID}:$GCP_PROJECT_ID:g" clouddeploy.yaml
+          sed -i "s:\${GCP_PROJECT_ID_TARGET_DEV}:$GCP_PROJECT_ID_TARGET_DEV:g" clouddeploy.yaml
+
+      - name: 'Create CloudDeploy pipeline'
+        run: |
+          gcloud deploy apply --file ./clouddeploy.yaml \
+            --region ${{ env.GCP_LOCATION }}

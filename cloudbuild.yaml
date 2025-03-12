@@ -1,0 +1,61 @@
+steps:
+- id: 'build-status'
+  name: 'alpine'
+  entrypoint: 'sh'
+  dir: /workspace
+  args:
+  - '-c'
+  - |
+      echo "*************************************************"
+      echo "*************************************************"
+      echo "Running Container Build for sportsball/frontend"
+      echo "*************************************************"
+      echo "*************************************************"
+      echo ""
+      echo "Google Cloud Project ID: $PROJECT_ID"
+      echo "Default region:          $LOCATION"
+      echo "Release version:         $_RELEASE_ID"
+      echo ""
+      echo "*************************************************"
+
+- name: gcr.io/k8s-skaffold/skaffold:v2.13.2
+  id: skaffoldBuild
+  args:
+    - 'skaffold'
+    - 'build'
+    - '--filename=skaffold.yaml'
+    - '--default-repo=$LOCATION-docker.pkg.dev/$PROJECT_ID/sportsball'
+    - '--profile=dev'
+    - '--tag=$_RELEASE_ID'
+    - '--file-output=/workspace/artifacts.json'
+
+- id: buildArtifactsInfo
+  name: 'alpine'
+  entrypoint: 'sh'
+  dir: /workspace
+  args:
+  - '-c'
+  - |
+      echo $(cat /workspace/artifacts.json)
+
+- id: cloudDeploy
+  name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  entrypoint: bash
+  dir: /workspace
+  args:
+  - '-c'
+  - |
+      gcloud deploy releases create rel-${_RELEASE_ID} \
+        --region=$LOCATION \
+        --delivery-pipeline=sportsball \
+        --skaffold-version="2.13" \
+        --skaffold-file=skaffold.yaml \
+        --build-artifacts=/workspace/artifacts.json
+
+serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/sa-build@$PROJECT_ID.iam.gserviceaccount.com'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _RELEASE_ID: __RELEASE_ID__
