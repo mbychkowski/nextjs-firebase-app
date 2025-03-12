@@ -84,3 +84,17 @@ gcloud iap web add-iam-policy-binding \
     --member=user:$USER_EMAIL \
     --role='roles/iap.httpsResourceAccessor'
 ```
+
+# 5\ Setup secret configurations
+
+```
+gcloud secrets create firebase-sportsball \
+    --replication-policy="automatic" \
+    --project="${PROJECT_ID}"
+```
+
+```
+gcloud secrets versions add firebase-sportsball \
+  --data-file firebase.json \
+  --project="${PROJECT_ID}"
+```

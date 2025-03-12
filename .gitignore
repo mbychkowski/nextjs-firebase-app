@@ -45,6 +45,7 @@ next-env.d.ts
 **/node_modules/*
 **/.firebaserc
 
+firebase.json
 firebase.config.json
 
 .runtimeconfig.json

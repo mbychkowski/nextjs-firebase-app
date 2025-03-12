@@ -32,6 +32,7 @@ for SUCCINCT_ROLE in \
     clouddeploy.releaser \
     iam.serviceAccountUser \
     logging.logWriter \
+    secretmanager.secretAccessor \
     serviceusage.serviceUsageConsumer \
     storage.admin \
     storage.objectUser \

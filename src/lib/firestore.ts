@@ -1,10 +1,12 @@
 import { initializeApp } from "firebase/app";
 import { Firestore, getFirestore } from "firebase/firestore";
+import { readFileSync } from "fs";
 
-// import config from "../../firebase.config.json" assert { type: "json" };
-import { AccessSecret } from "./secretmanager";
+const firebaseConfigJson = readFileSync("firebase.json", "utf-8")
 
-const config = AccessSecret('123507910180', 'firebase-config', '3')
+console.log(JSON.parse(firebaseConfigJson))
+
+const config = JSON.parse(firebaseConfigJson)
 
 const firebaseConfig = {
   ...config
@@ -12,9 +14,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const firestoreClient = getFirestore(app);
-
 const globalForFirestore = globalThis as unknown as { firestore: Firestore }
+
+export const firestoreClient =
+  globalForFirestore.firestore || getFirestore(app);
 
 if (process.env.NODE_ENV !== "production") {
   globalForFirestore.firestore = firestoreClient

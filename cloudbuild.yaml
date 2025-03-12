@@ -18,8 +18,19 @@ steps:
       echo ""
       echo "*************************************************"
 
+- id: buildPrep
+  name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  entrypoint: bash
+  dir: /workspace
+  args:
+  - '-c'
+  - |
+      echo $(gcloud secrets versions access 1 \
+        --secret=firebase-sportsball) > firebase.json
+
 - name: gcr.io/k8s-skaffold/skaffold:v2.13.2
   id: skaffoldBuild
+  dir: /workspace
   args:
     - 'skaffold'
     - 'build'
