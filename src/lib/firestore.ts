@@ -4,8 +4,6 @@ import { readFileSync } from "fs";
 
 const firebaseConfigJson = readFileSync("firebase.json", "utf-8")
 
-console.log(JSON.parse(firebaseConfigJson))
-
 const config = JSON.parse(firebaseConfigJson)
 
 const firebaseConfig = {
@@ -16,8 +14,7 @@ const app = initializeApp(firebaseConfig);
 
 const globalForFirestore = globalThis as unknown as { firestore: Firestore }
 
-export const firestoreClient =
-  globalForFirestore.firestore || getFirestore(app);
+export const firestoreClient = getFirestore(app);
 
 if (process.env.NODE_ENV !== "production") {
   globalForFirestore.firestore = firestoreClient

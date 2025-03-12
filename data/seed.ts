@@ -2,10 +2,11 @@ import { initializeApp } from "firebase/app";
 import { doc, getFirestore, setDoc, Timestamp } from "firebase/firestore";
 
 import { Post } from "@/features/posts/types";
+import { readFileSync } from "fs";
 
-import config from "../firebase.config.json" assert { type: "json" };
+const firebaseConfigJson = readFileSync("firebase.json", "utf-8")
 
-console.log(config)
+const config = JSON.parse(firebaseConfigJson)
 
 const firebaseConfig = {
   ...config
